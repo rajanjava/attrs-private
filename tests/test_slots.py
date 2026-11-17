@@ -1214,3 +1214,21 @@ def test_slots_unpickle_is_backward_compatible(frozen):
     a_unpickled = pickle.loads(a_pickled)
 
     assert a_unpickled == a
+
+
+def test_slots_declared_on_class():
+    """
+    Slots declared on an attrs-decorated class are preserved and accessible.
+    """
+    @attrs.define
+    class A:
+        __slots__ = ("private",)
+        public: str = "foo"
+
+    a = A()
+    a.private = 1
+    assert a.public == "foo"
+    assert a.private == 1
+    assert "private" in A.__slots__
+    assert not hasattr(a, "__dict__")
+
