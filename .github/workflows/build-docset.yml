@@ -1,0 +1,41 @@
+---
+name: Build docset
+
+on:
+  push:
+    tags: ["*"]
+  workflow_dispatch:
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_PYTHON_VERSION_WARNING: "1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+
+jobs:
+  docset:
+    name: Build Dash.app docset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.x"
+      - uses: hynek/setup-cached-uv@v2.6.0
+
+      - run: >
+          uv run --only-group tox
+          tox run -e docset
+
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: docset
+          path: attrs.tgz
