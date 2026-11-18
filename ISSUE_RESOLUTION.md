@@ -56,6 +56,11 @@ TypeError: descriptor 'private' for 'A' objects doesn't apply to a 'A' object
 
 ---
 
+## Solution Approach
+1. **Inspect Class Creation & Slot Generation:** When `@define(slots=True)` builds a new slotted class in `src/attr/_make.py`, it constructs `__slots__` from attrs fields, inadvertently discarding any custom `__slots__` explicitly declared directly on the decorated class body.
+2. **Merge User-Declared Slots with Generated Slots:** Collected any `__slots__` defined in the original class dictionary (normalized from `str` or iterable) and merged them with the attrs-generated field slots while deduplicating entries and excluding `__dict__`/`__weakref__` conflicts.
+3. **TDD & Regression Safety:** Added `test_slots_declared_on_class` in `tests/test_slots.py` confirming custom slots remain accessible on instances alongside attrs fields.
+
 ## 4. Code Fix
 In `src/attr/_make.py` within `_ClassBuilder._create_slots_class`:
 1. Extracted and normalized any `own_slots` explicitly declared on `self._cls`.
